@@ -5,5 +5,8 @@
              (update-bac 0.04)))
 
 (expect false (with-redefs [state (atom {})]
+                (legally-drunk? 0.02)))
+
+(expect false (with-redefs [state (atom {})]
                 (update-bac 0.00)
                 (legally-drunk? 0.02)))

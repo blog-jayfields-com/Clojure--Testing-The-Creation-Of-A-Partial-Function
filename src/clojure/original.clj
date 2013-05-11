@@ -9,4 +9,4 @@
   (swap! state assoc :bac x))
 
 (defn legally-drunk? [bac-increase]
-  (pure-legally-drunk? (:bac @state) bac-increase))
+  (pure-legally-drunk? (or (:bac @state) 0) bac-increase))

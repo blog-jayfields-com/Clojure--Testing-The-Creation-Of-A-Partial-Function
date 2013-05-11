@@ -9,4 +9,6 @@
   (swap! state assoc :legally-drunk?* (partial pure-legally-drunk? x)))
 
 (defn legally-drunk? [bac-increase]
-  ((:legally-drunk?* @state) bac-increase))
+  (let [{:keys [legally-drunk?*]
+         :or {legally-drunk?* (constantly false)}} @state]
+    (legally-drunk?* bac-increase)))
