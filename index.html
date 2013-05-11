@@ -28,32 +28,31 @@
         </ul>
       </header>
       <section>
-        <h3>Welcome to GitHub Pages.</h3>
-
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
-
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+I recently refactored some code takes longs from two different sources to compute one value. The code originally stored the longs and called a function when all of the data arrived. The refactored version partials the data while it's incomplete and executes the partial'd function when all of the data is available. Below is a contrived example of what I'm taking about.
+<br><br>
+Let's pretend we need a function that will allow us to check whether or not another drink would make us legally drunk in New York City.
+<br><br>
+The code below stores the current bac and uses the value when legally-drunk? is called.
+<br><br>
+<script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/src/clojure/original.clj"></script>
+The following (passing) tests demonstrate that everything works as expected.
+<br><br>
+<script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/test/expectations/original_expectations.clj"></script>
+This code works without issue, but can also be refactored to store a partial'd function instead of the bac value. Why you would want to do such a thing is outside of the scope of this post, so we'll just assume this is a good refactoring. The code below no longer stores the bac value, and instead stores the pure-legally-drunk? function partial'd with the bac value.
+<br><br>
+<script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/src/clojure/refactored.clj"></script>
+Two of the three of the tests don't change; however, the test that was verifying the state is now broken.
+<br><br>
+<script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/test/expectations/refactored_expectations.clj"></script>
+note: The test output has been trimmed and reformatted to avoid horizontal scrolling.
+<br><br>
+In the output you can see that the test is failing as you'd expect, due to the change in what we're storing. What's broken is obvious, but there's not an obvious solution. Assuming you still want this state based test, how do you verify that you've partial'd the right function with the right value?
+<br><br>
+The solution is simple, but a bit tricky. As long as you don't find the redef too magical, the following solution allows you to easily verify the function that's being partial'd as well as the arguments.
+<br><br>
+<script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/test/expectations/refactored_passing_expectations.clj"></script>
+Those tests all pass, and should provide security that the legally-drunk? and update-bac functions are sufficiently tested. The pure-legally-drunk? function still needs to be tested, but that should be easy since it's a pure function.
+       
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/jaycfields">jaycfields</a></p>
