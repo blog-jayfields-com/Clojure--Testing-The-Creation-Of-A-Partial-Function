@@ -28,7 +28,7 @@
         </ul>
       </header>
       <section>
-I recently refactored some code that takes longs from two different sources to compute one value. The code originally stored the longs and called a function when all of the data arrived. The refactored version partials the data while it's incomplete and executes the partial'd function when all of the data is available. Below is a contrived example of what I'm taking about.
+      I recently refactored some code that takes longs from two different sources to compute one value. The code originally stored the longs and called a function when all of the data arrived. The refactored version partials the data while it's incomplete and executes the partial'd function when all of the data is available. Below is a contrived example of what I'm taking about.
 <br><br>
 Let's pretend we need a function that will allow us to check whether or not another drink would make us legally drunk in New York City.
 <br><br>
@@ -52,6 +52,55 @@ The solution is simple, but a bit tricky. As long as you don't find the redef to
 <br><br>
 <script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/test/expectations/refactored_passing_expectations.clj"></script>
 Those tests all pass, and should provide security that the legally-drunk? and update-bac functions are sufficiently tested. The pure-legally-drunk? function still needs to be tested, but that should be easy since it's a pure function.
+<br><br>
+Would you want this kind of test? I think that becomes a matter of context and personal preference. Given the various paths through the code the following tests should provide complete coverage.
+<br><br>
+<script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/test/expectations/high_level_expectations.clj"></script>
+The above tests make no assumptions about the implementation - they actually pass whether you :use the 'original namespace or the 'refactored namespace. Conversely, the following tests verify each function in isolation and a few of them are very much tied to the implementation.
+<br><br>
+<script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/test/expectations/unit_level_expectations.clj"></script>
+Both sets of tests would give me confidence that the code works as expected, so choosing which tests to use would then become a matter of maintenance cost. I don't think there's anything special about these examples; I think they offer the traditional trade offs between higher and lower level tests. A specific trade-off that stands out to me is identifying defect localization versus having to update the test when you update the code.
+<br><br>
+As I mentioned previously, the high-level-expectations work for both the 'original and the 'refactored namespaces. Being able to change the implementation without having to change the test is obviously an advantage of the high level tests. However, when things go wrong, the lower level tests provide better feedback for targeting the issue.
+<br><br>
+The following code is exactly the same as the code in refactored.clj, except it has a 1 character typo. (it's not necessary to spot the typo, the test output below will show you want it is)
+<br><br>
+<script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/src/clojure/refactored_with_typo.clj"></script>
+The high level tests give us the following feedback.
+<pre>failure in (high_level_expectations.clj:14) : expectations.high-level-expectations
+(expect
+ true
+ (with-redefs
+  [state (atom {})]
+  (update-bac 0.01)
+  (legally-drunk? 0.07)))
+
+           expected: true 
+                was: false</pre>
+There's not much in that failure report to point us in the right direction. The unit-level-expectations provide significantly more information, and the details that should make it immediately obvious where the typo is.
+<pre>failure in (unit_level_expectations.clj:8) : expectations.unit-level-expectations
+(expect
+ {:legally-drunk?* [pure-legally-drunk? 0.04]}
+ (with-redefs [state (atom {}) partial vector] (update-bac 0.04)))
+
+           expected: {:legally-drunk?* [#<refactored_with_typo$pure_legally_drunk_QMARK_@621bedb0> 0.04]} 
+                was: {:legally-drunk?** [#<refactored_with_typo$pure_legally_drunk_QMARK_@621bedb0> 0.04]}
+ 
+           :legally-drunk?** with val [#<refactored_with_typo$pure_legally_drunk_QMARK_@621bedb0> 0.04] 
+                             is in actual, but not in expected
+           :legally-drunk?* with val [#<refactored_with_typo$pure_legally_drunk_QMARK_@621bedb0> 0.04] 
+                            is in expected, but not in actual</pre>
+The above output points us directly to the extra asterisk in update-bac that caused the failure.
+<br><br>
+Still, I couldn't honestly tell you which of the above tests that I prefer. This specific example provides a situation where I think you could convincingly argue for either set of tests. However, as the code evolved I would likely choose one path or the other based on:<ul>
+<li>how much 'setup' is required for always using high-level tests?
+<li>how hard is it to guarantee integration using primarily unit-level tests?
+</ul>
+In our examples the high level tests require redef'ing one bit of state. If that grew to a few pieces of state and/or a large increase in the complexity of the state, then I may be forced to move towards more unit-level tests. A rule of thumb I use: If a significant amount of the code within a test is setting up the test context, there's probably a smaller function and a set of associated tests waiting to be extracted.
+<br><br>
+By definition, the unit-level tests don't test the integration of the various functions. When I'm using unit-level tests, I'll often test the various code paths at the unit level and then have a happy-path high-level test that verifies integration of the various functions. My desire to have more high-level tests increases as the integration complexity increases, and at some point it makes sense to simply convert all of the tests to high-level tests.
+<br><br>
+If you constantly re-evaluate which tests will be more appropriate and switch when necessary, you'll definitely come out ahead in the long run. 
        
       </section>
       <footer>
