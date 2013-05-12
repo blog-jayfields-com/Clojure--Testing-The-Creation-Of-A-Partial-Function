@@ -10,5 +10,5 @@
 
 (defn legally-drunk? [bac-increase]
   (let [{:keys [legally-drunk?*]
-         :or {legally-drunk?* (constantly false)}} @state]
+         :or {legally-drunk?* (partial pure-legally-drunk? 0)}} @state]
     (legally-drunk?* bac-increase)))
