@@ -28,6 +28,7 @@
         </ul>
       </header>
       <section>
+      
       I recently refactored some code that takes longs from two different sources to compute one value. The code originally stored the longs and called a function when all of the data arrived. The refactored version partials the data while it's incomplete and executes the partial'd function when all of the data is available. Below is a contrived example of what I'm taking about.
 <br><br>
 Let's pretend we need a function that will allow us to check whether or not another drink would make us legally drunk in New York City.
@@ -59,7 +60,7 @@ Would you want this kind of test? I think that becomes a matter of context and p
 The above tests make no assumptions about the implementation - they actually pass whether you :use the 'original namespace or the 'refactored namespace. Conversely, the following tests verify each function in isolation and a few of them are very much tied to the implementation.
 <br><br>
 <script src="http://gist-it.appspot.com/github/jaycfields/Clojure--Testing-The-Creation-Of-A-Partial-Function/blob/master/test/expectations/unit_level_expectations.clj"></script>
-Both sets of tests would give me confidence that the code works as expected, so choosing which tests to use would then become a matter of maintenance cost. I don't think there's anything special about these examples; I think they offer the traditional trade offs between higher and lower level tests. A specific trade-off that stands out to me is identifying defect localization versus having to update the test when you update the code.
+Both sets of tests would give me confidence that the code works as expected, so choosing which tests to use would become a matter of maintenance cost. I don't think there's anything special about these examples; I think they offer the traditional trade-offs between higher and lower level tests. A specific trade-off that stands out to me is identifying defect localization versus having to update the test when you update the code.
 <br><br>
 As I mentioned previously, the high-level-expectations work for both the 'original and the 'refactored namespaces. Being able to change the implementation without having to change the test is obviously an advantage of the high level tests. However, when things go wrong, the lower level tests provide better feedback for targeting the issue.
 <br><br>
